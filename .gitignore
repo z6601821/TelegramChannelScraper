@@ -1,0 +1,5 @@
+# Ignore these files
+__pycache__/
+TelegramChannelScraper_*
+
+# But not these
