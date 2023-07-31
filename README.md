@@ -1,11 +1,13 @@
 # TelegramChannelScraper
 This is a Python command line tool that pulls all intact (non-deleted, non-hidden) messages for a target channel using Telethon to interact with the Telegram API.
 
-(Requires a Telegram API account and the following credentials:  api_id, api_hash, and phone number associated with the account.)
-
 ## Requirements
 - Python 3.11.X
 - Git Bash
+- Telegram API acount and credentials:
+   - api_id
+   - api_hash
+   - account phone number
 
 ## Installation
 Clone with HTTPS:
