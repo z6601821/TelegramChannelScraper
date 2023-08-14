@@ -3,9 +3,7 @@ from TelegramChannelScraper import *
 import asyncio
 import sys
 
-loop = asyncio.get_event_loop()
-
-async def wrapper():
+async def main():
     scraper = TelegramChannelScraper()
     
     try:
@@ -20,9 +18,5 @@ async def wrapper():
         print("\nERROR: The script encountered a problem while tring to scrape messages from the channel you provided; make sure the channel exists!\n")
         sys.exit(1)
 
-def main():
-    loop.run_until_complete(wrapper())
-
-
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

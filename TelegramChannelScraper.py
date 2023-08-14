@@ -13,14 +13,14 @@ class TelegramChannelScraper():
         
         while not credentials_provided:
             self.credentials["api_id"] = input(
-                "\nProvide your Telegram api_id: (shift + insert to paste)\n").strip()
+                "\nProvide your Telegram api_id:\n(Shift + insert to paste)\n").strip()
             self.credentials["api_hash"] = input(
-                "\nProvide your Telegram api_hash: (shift + insert to paste)\n").strip()
+                "\nProvide your Telegram api_hash:\n(Shift + insert to paste)\n").strip()
             self.credentials["phone"] = input(
-                "\nProvide your Telegram account phone number: (shift + insert to paste)\n").strip()
+                "\nProvide your Telegram account phone number:\n(Shift + insert to paste)\n").strip()
             print(f"\nThese are the credentials you provided:\n{self.credentials}\n")
             user_accepts = input(
-                "\nDo you wish to proceed? Enter 'y' to continue or 'n' to start over\n")
+                "\nDo you wish to proceed? Enter 'y' to continue or 'n' to start over:\n")
             
             if user_accepts.strip().lower() == 'y':
                 credentials_provided = True
@@ -31,6 +31,7 @@ class TelegramChannelScraper():
             self.credentials["api_id"], 
             self.credentials["api_hash"],
         )
+        print("\n------------------------------\n")
         print("\nClient initialized\n")
         await self.authenticate()
 
@@ -46,7 +47,7 @@ class TelegramChannelScraper():
                 self.credentials["phone"], 
                 input("Enter code:\n")
             )
-        print("\nClient authenticated\n\n")
+            print("\nClient authenticated\n\n")
         
     async def get_messages(self):
         self.today_date = dt.today().strftime("%Y-%m-%d")
@@ -54,26 +55,27 @@ class TelegramChannelScraper():
         
         channel_provided = False
         while not channel_provided:
+            print("\n------------------------------\n")
             entered_channel = input("Enter a Telegram channel to scrape:\n")
             if entered_channel.strip() == "":
                 print("You must enter a valid channel name!\n")
                 continue
 
-            print(f"\nThis is the channel name you provided:\n{entered_channel}\n")
+            print(f"\nThis is the channel you provided:\n{entered_channel}\n")
             user_accepts = input(
-                "Do you wish to proceed? Enter 'y' to continue or 'n' to start over\n")
+                "Do you wish to proceed? Enter 'y' to continue or 'n' to start over:\n")
             
             if user_accepts.strip().lower() == 'y':
                 self.target_channel = entered_channel
                 channel_provided = True
                 
-        self.folder_name = f"TelegramChannelScraper_'{self.target_channel}'_{self.today_date}"
+        self.folder_name = f"Output_{self.target_channel}_{self.today_date}"
         
         try:
             os.mkdir(self.folder_name)
         except FileExistsError:
             pass
-        print(f"\nCreated folder: '{self.folder_name}' to store output\n")
+        print(f"\nCreated folder '{self.folder_name}' to store output\n")
 
         pulled_messages = await self.pull_messages_in_batches()
         cleaned_messages = self.parse_raw_messages(pulled_messages)
@@ -84,18 +86,18 @@ class TelegramChannelScraper():
         # Find highest message ID; this is most recent message
         all_messages = await self.client.get_messages(self.target_channel)
         highest_message_id = all_messages[0].id
-        print(f"Most recent message in channel: '{self.target_channel}' has ID: {highest_message_id}\n")
+        print(f"Most recent message in channel '{self.target_channel}' has ID {highest_message_id}\n")
     
         # Divide highest ID by 1000 and floor to get number of batches
         batches_needed = int(highest_message_id / 1000)
-        print(f"Preparing to pull messages in {batches_needed} batches of 1000 each starting oldest to newest\n")
+        print(f"Preparing to pull messages in {batches_needed} batches of 1000 each, oldest to newest\n")
 
         # Loop through batches pulling 1000 msgs at a time; final batch must encompass highest message ID
         pulled_messages = []
         for i in range(1, batches_needed + 2): # add 2 to be high-inclusive for highest ID
             batch_high = i * 1000
             batch_low = batch_high - 999
-            print(f"\tWorking on batch {i} (message ID: {batch_low} - message ID: {batch_high})")
+            print(f"Working on batch {i} (message ID: {batch_low} - message ID: {batch_high})")
 
             async for message in self.client.iter_messages(
                 self.target_channel, 
@@ -107,9 +109,9 @@ class TelegramChannelScraper():
                 pulled_messages.append(message)
                 
             sleep(30.0)
-            print(f"\tFinished batch {i}\n")
+            print(f"Finished batch {i}\n")
 
-        print(f"Batches finished; pulled {len(pulled_messages)} total messages for channel: '{self.target_channel}'\n\n")
+        print(f"Pulled {len(pulled_messages)} total messages for channel '{self.target_channel}'\n")
         return pulled_messages
 
     def parse_raw_messages(self, pulled_messages):
@@ -176,11 +178,10 @@ class TelegramChannelScraper():
         return cleaned
 
     def create_messages_table(self, cleaned_messages):
-        print("Creating output table\n")
         df = pd.DataFrame(cleaned_messages)
         df = df.explode("recent_replier_ids") # should be 1 ID per row
         df.fillna("", inplace=True)
         df.drop_duplicates(inplace=True)
         # print(f"Messages table rows: {df.shape[0]}")
         df.to_csv(f"{self.folder_name}/{self.folder_name}.csv", index=False)
-        print(f"Created file: '{self.folder_name}.csv' in folder: '{self.folder_name}'\n\n")
+        print(f"Created file '{self.folder_name}.csv' in output folder\n\n")
