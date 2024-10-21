@@ -119,6 +119,7 @@ class TelegramChannelScraper():
         cleaned_messages = []
         for message in pulled_messages:
             cleaned_messages.append(self.extract_message_fields(message))
+        print(f"Cleaned {len(cleaned_messages)} messaged\n")
         return cleaned_messages
     
     def extract_message_fields(self, message):
@@ -178,10 +179,12 @@ class TelegramChannelScraper():
         return cleaned
 
     def create_messages_table(self, cleaned_messages):
+        print("Making messages table\n")
         df = pd.DataFrame(cleaned_messages)
         df = df.explode("recent_replier_ids") # should be 1 ID per row
         df.fillna("", inplace=True)
         df.drop_duplicates(inplace=True)
         # print(f"Messages table rows: {df.shape[0]}")
+        # Needs a try except to handle if already try to create file and failed (CSV will still be there)
         df.to_csv(f"{self.folder_name}/{self.folder_name}.csv", index=False)
         print(f"Created file '{self.folder_name}.csv' in output folder\n\n")
