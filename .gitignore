@@ -1,3 +1,5 @@
-# Ignore these files
+# Ignore these files and folders
+*.json
+Usage.py
 __pycache__/
-Output_*
+TelegramChannelScraper*/
