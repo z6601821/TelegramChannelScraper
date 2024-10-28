@@ -216,7 +216,11 @@ class TelegramChannelScraper():
     def __append_messages_to_file(self, cleaned_messages, output_folder_name):
         print("Appending messages to file...")
         df = pd.DataFrame(cleaned_messages)
-        df = df.explode("recent_replier_ids") # should be 1 ID per row
+        try:
+            df = df.explode("recent_replier_ids") # should be 1 ID per row
+        except KeyError as e:
+            print(f"Caught KeyError: {e}")
+            pass
         df.fillna("", inplace=True)
         df.drop_duplicates(inplace=True)
         full_output_file_path = f"{output_folder_name}/{output_folder_name}.csv"
